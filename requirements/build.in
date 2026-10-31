@@ -1,0 +1,4 @@
+# Build backend/tools; no editable local project in the lock.
+setuptools>=77
+wheel
+build>=1.2,<2

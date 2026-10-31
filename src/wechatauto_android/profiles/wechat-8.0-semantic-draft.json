@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "name": "wechat-8.0.0-zh-CN-semantic-draft-NOT-CALIBRATED",
+  "version": "8.0.0",
+  "package": "com.tencent.mm",
+  "calibrated": false,
+  "evidence": "No real device was supplied; semantic labels below are a starting point, not validated selectors.",
+  "android_sdks": [],
+  "group_identity_supported": false,
+  "roles": {
+    "home.marker": {
+      "text": "微信"
+    },
+    "home.me": {
+      "text": "我"
+    },
+    "home.search": {
+      "description": "搜索"
+    },
+    "search.input": {
+      "class_name": "android.widget.EditText"
+    },
+    "search.result": {
+      "text": "{title}"
+    },
+    "chat.title": {
+      "text": "{title}"
+    },
+    "chat.input": {
+      "class_name": "android.widget.EditText"
+    },
+    "chat.send": {
+      "text": "发送"
+    },
+    "message.quote": {
+      "text": "引用"
+    },
+    "message.recall": {
+      "text": "撤回"
+    },
+    "chat.more": {
+      "description": "更多功能按钮，已折叠"
+    },
+    "call.voice": {
+      "text": "语音通话"
+    },
+    "call.video": {
+      "text": "视频通话"
+    },
+    "home.chats": {
+      "text": "微信"
+    }
+  },
+  "collections": {},
+  "identity_route": "contact_profile"
+}

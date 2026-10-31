@@ -1,0 +1,32 @@
+services:
+  controller:
+    image: wechatauto-replica-android:local
+    platform: linux/amd64
+    build: .
+    command: ["--help"]
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+
+  # Explicit opt-in. Linux host networking lets adbutils use an already
+  # authorized host ADB server at loopback, without exposing it publicly.
+  # This service still defaults to help; it never sends a message on startup.
+  android:
+    profiles: [device]
+    image: wechatauto-replica-android:local
+    platform: linux/amd64
+    build: .
+    command: ["--help"]
+    network_mode: host
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      ANDROID_ADB_SERVER_HOST: "127.0.0.1"
+      ANDROID_ADB_SERVER_PORT: "5037"
+      ADB_SERVER_SOCKET: "tcp:127.0.0.1:5037"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m

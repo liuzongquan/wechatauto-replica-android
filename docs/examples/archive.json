@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "account_id": "demo-account",
+  "messages": [
+    {
+      "id": "demo-1",
+      "account_id": "demo-account",
+      "chat_id": "demo-chat",
+      "sequence": 1,
+      "sender_id": "demo-contact",
+      "content": "这是合成档案，不是从手机提取的微信消息。",
+      "type": "text",
+      "timestamp": "2026-01-01T00:00:00Z",
+      "origin": "user_export"
+    },
+    {
+      "id": "demo-2",
+      "account_id": "demo-account",
+      "chat_id": "demo-chat",
+      "sequence": 2,
+      "sender_id": "demo-account",
+      "content": "用于验证离线查询和导出。",
+      "type": "text",
+      "timestamp": "2026-01-01T00:00:01Z",
+      "origin": "user_export"
+    }
+  ],
+  "contacts": [],
+  "groups": [],
+  "labels": [],
+  "moments": []
+}

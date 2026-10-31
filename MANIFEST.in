@@ -1,0 +1,13 @@
+include README.md LICENSE NOTICE Dockerfile compose.yaml .dockerignore
+recursive-include docs *.md *.json
+recursive-include profiles *.json
+recursive-include requirements *.lock *.in
+recursive-include scripts *.py
+recursive-include tests *.py
+recursive-include src/wechatauto_android/assets *.js
+recursive-include src/wechatauto_android/profiles *.json
+global-exclude __pycache__ *.py[cod]
+prune private
+prune local-state
+prune evidence
+prune artifacts

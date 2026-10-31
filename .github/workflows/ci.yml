@@ -1,0 +1,106 @@
+name: Deterministic tests and packaging
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-tests:
+    name: Synthetic fixtures / Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install test dependencies and pinned SDK (no device connection)
+        run: |
+          python -m pip install --require-hashes -r requirements/test.lock
+          python -m pip install --no-deps --no-build-isolation -e .
+      - name: Deterministic tests (not live WeChat validation)
+        run: python -m pytest -q --junitxml=reports/tests.xml --cov=wechatauto_android --cov-branch --cov-report=xml:reports/coverage.xml
+      - name: Upload offline test evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: offline-python-${{ matrix.python }}
+          path: reports/
+          if-no-files-found: warn
+      - name: Static checks
+        run: python -m ruff check src tests scripts
+      - name: Safe CLI and documentation sample
+        run: |
+          wechatauto-android --help
+          wechatauto-android capabilities
+          wechatauto-android archive --file docs/examples/archive.json --account demo-account messages demo-chat --limit 20
+
+  package:
+    name: Wheel and source distribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --require-hashes -r requirements/build.lock
+      - run: python -m build --no-isolation
+      - name: Install wheel in an isolated environment
+        run: |
+          python -m venv /tmp/wheel-smoke
+          /tmp/wheel-smoke/bin/python -m pip install --require-hashes -r requirements/runtime.lock
+          /tmp/wheel-smoke/bin/python -m pip install --no-deps dist/*.whl
+          cd /tmp
+          /tmp/wheel-smoke/bin/wechatauto-android --help
+          /tmp/wheel-smoke/bin/wechatauto-android capabilities
+          /tmp/wheel-smoke/bin/python -c "from importlib.resources import files; p=files('wechatauto_android'); assert p.joinpath('profiles/wechat-8.0-semantic-draft.json').is_file(); assert p.joinpath('assets/wcdb_open7.js').is_file(); assert p.joinpath('assets/wcdb2_setcipher3.js').is_file()"
+      - name: Install source distribution in an isolated environment
+        run: |
+          python -m venv /tmp/sdist-smoke
+          /tmp/sdist-smoke/bin/python -m pip install --require-hashes -r requirements/test.lock
+          sdist=$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)
+          /tmp/sdist-smoke/bin/python -m pip install --no-deps --no-build-isolation "$sdist"
+          mkdir /tmp/sdist-source
+          tar -xzf "$sdist" -C /tmp/sdist-source --strip-components=1
+          cd /tmp
+          /tmp/sdist-smoke/bin/wechatauto-android --help
+          cd /tmp/sdist-source
+          /tmp/sdist-smoke/bin/python -m pytest -q
+
+  docker:
+    name: Controller image / ${{ matrix.flavor }} (no Android runtime)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [runtime, keycapture]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+      - name: Build controller image
+        run: docker build --platform linux/amd64 --build-arg RUNTIME_LOCK=requirements/${{ matrix.flavor }}.lock --tag wechatauto-replica-android:ci .
+      - name: Non-root, no-network startup smoke
+        run: |
+          test "$(docker image inspect --format '{{.Config.User}}' wechatauto-replica-android:ci)" = "10001:10001"
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:rw,noexec,nosuid,size=64m wechatauto-replica-android:ci --help
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --tmpfs /tmp:rw,noexec,nosuid,size=64m wechatauto-replica-android:ci capabilities
+          docker run --rm --network none --entrypoint python wechatauto-replica-android:ci -c "from sqlcipher3 import dbapi2; c=dbapi2.connect(':memory:'); assert c.execute('PRAGMA cipher_version').fetchone(); c.close()"
+          docker run --rm --network none --entrypoint adb wechatauto-replica-android:ci version
+      - name: Verify optional Frida client import without a device
+        if: matrix.flavor == 'keycapture'
+        run: docker run --rm --network none --entrypoint python wechatauto-replica-android:ci -c "import frida; assert frida.__version__ == '16.7.19'"

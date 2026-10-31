@@ -1,0 +1,7 @@
+wechatauto-replica-android
+Android-oriented independent implementation inspired by:
+https://github.com/fanyuantaier/wechatauto-replica
+Upstream reference revision: bc2e6f2461330eb1a53996d2f2afc18416376b52
+Upstream license: Apache License 2.0 (preserved in LICENSE).
+This project is not affiliated with or endorsed by Tencent or WeChat.
+Windows memory extraction, DLL patching, and cryptographic key extraction have not been ported.
