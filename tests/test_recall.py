@@ -346,7 +346,9 @@ def test_transaction_failure_is_sanitized_and_rolled_back(capsys):
         guard._connection.set_authorizer(deny_insert)
         with pytest.raises(RecallStoreError):
             guard.observe(recall())
-        guard._connection.set_authorizer(None)
+        # Disabling with None was added in Python 3.11; restore a permissive
+        # callback on every supported version, including Python 3.10.
+        guard._connection.set_authorizer(lambda *args: sqlite3.SQLITE_OK)
         assert guard.events() == []
         assert guard.observe(recall()).status == "recovered"
     captured = capsys.readouterr()

@@ -91,7 +91,7 @@ python -m pytest -q
 python -m build --no-isolation
 ```
 
-**2026-10-31 冻结版本离线结果：783 项测试通过（16.57 秒），失败/错误/跳过均为 0。** 语句覆盖率 94.64%，分支覆盖率 89.19%（合并显示 93%）；全新哈希锁定安装、`pip check`、Ruff、两个 JS 语法检查及 wheel/sdist 构建通过。**发布后的远端 CI 与实际 Docker 构建/运行仍待验证；真机验收已暂缓，完整功能等价仍未完成。** 证据口径见 [测试记录](docs/TESTING.md#本次冻结版本的离线验证记录)。
+**2026-10-31 冻结版本离线结果：783 项测试通过（16.57 秒），失败/错误/跳过均为 0。** 语句覆盖率 94.64%，分支覆盖率 89.19%（合并显示 93%）；全新哈希锁定安装、`pip check`、Ruff、两个 JS 语法检查及 wheel/sdist 构建通过。**远端已验证 wheel/sdist 及 runtime、keycapture 两种 Docker 镜像的构建与无设备启动；Python 3.10–3.13 全矩阵的最新状态见 [GitHub Actions](https://github.com/liuzongquan/wechatauto-replica-android/actions)。真机验收已暂缓，完整功能等价仍未完成。** 证据口径见 [测试记录](docs/TESTING.md#本次冻结版本的离线验证记录)。
 
 CI 分开运行确定性测试、wheel/sdist 构建与安装、Docker 构建/无设备启动；**任何一项绿色都不能代替真机功能验收**。只读硬件检查需要显式授权：
 

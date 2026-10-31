@@ -42,10 +42,11 @@ python -m build --no-isolation
 | 哈希锁定依赖全新安装 / `pip check` | 通过 |
 | Ruff / 两个运行时观察 JS 的 `node --check` | 通过 |
 | wheel + sdist 构建 | 通过 |
-| 发布后的远端 CI / 实际 Docker 镜像构建与运行 | **待验证** |
+| 远端 wheel/sdist 与两种 Docker 镜像构建/无设备运行 | 已在源代码提交 `849c375` 的 [发布 CI](https://github.com/liuzongquan/wechatauto-replica-android/actions/runs/41237022634) 对应 job 验证通过 |
+| Python 3.10–3.13 全矩阵 | 查看 [各提交的 Actions 记录](https://github.com/liuzongquan/wechatauto-replica-android/actions)；首次 3.10 运行发现测试钩子的跨版本 API 差异，已修正测试并重新触发验证 |
 | 真机微信 / Root 采集 / Frida attach 或 spawn | **未执行；按用户要求暂缓** |
 
-以上是离线测试、依赖与构建证据，包含真实 SDK 合约和真实 SQLCipher 加密合成数据库，但**不包含真实微信业务验证，也不表示全部功能已等价实现**。发布后应以对应提交的 CI 结果补充远端证据；不能把工作流配置文件的存在写成运行成功。全部 53 个参考语义分组仍按 [功能矩阵](FEATURE_MATRIX.md) 分别报告实现、离线覆盖与缺口。
+以上是离线测试、依赖与构建证据，包含真实 SDK 合约和真实 SQLCipher 加密合成数据库，但**不包含真实微信业务验证，也不表示全部功能已等价实现**。远端记录须核对具体提交及 job，不能把工作流配置文件的存在写成运行成功。Python 3.10 的测试故障源于 `sqlite3.set_authorizer(None)` 的禁用语义只在 3.11 起支持；测试改为恢复返回 `SQLITE_OK` 的回调，仍保留事务回滚和后续恢复的原断言，未删除或跳过测试。全部 53 个参考语义分组仍按 [功能矩阵](FEATURE_MATRIX.md) 分别报告实现、离线覆盖与缺口。
 
 ## 当前真机状态
 
